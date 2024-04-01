@@ -15,7 +15,7 @@
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.52",
-        "phpunit/phpunit": "^10.5.15",
+        "phpunit/phpunit": "^10.5.16",
         "phpstan/phpstan": "^1.10.66",
         "rector/rector": "^1.0",
         "vimeo/psalm": "^5.23"
