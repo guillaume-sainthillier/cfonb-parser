@@ -17,6 +17,8 @@ namespace Silarhi\Cfonb\Parser;
 use DateTimeImmutable;
 use Silarhi\Cfonb\Exceptions\ParseException;
 
+use function sprintf;
+
 /** @internal */
 final class DateParser
 {
