@@ -16,6 +16,8 @@ namespace Silarhi\Cfonb\Parser;
 
 use Silarhi\Cfonb\Exceptions\ParseException;
 
+use function sprintf;
+
 /** @internal */
 final class LineParser
 {

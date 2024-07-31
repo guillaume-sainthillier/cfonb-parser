@@ -14,6 +14,8 @@ declare(strict_types=1);
 
 namespace Silarhi\Cfonb\Exceptions;
 
+use function sprintf;
+
 final class ValueOfKeyIsNotNumericException extends ParseException
 {
     public function __construct(string $key)

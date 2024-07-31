@@ -14,6 +14,8 @@ declare(strict_types=1);
 
 namespace Silarhi\Cfonb\Parser;
 
+use function sprintf;
+
 /** @internal */
 class RegexParts
 {

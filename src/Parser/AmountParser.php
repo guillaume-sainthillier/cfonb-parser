@@ -16,6 +16,7 @@ namespace Silarhi\Cfonb\Parser;
 
 use Silarhi\Cfonb\Exceptions\ParseException;
 
+use function sprintf;
 use function strlen;
 
 /** @internal */

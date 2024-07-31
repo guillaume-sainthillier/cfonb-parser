@@ -19,6 +19,7 @@ use Silarhi\Cfonb\Banking\Element;
 use Silarhi\Cfonb\Contracts\ParserInterface;
 use Silarhi\Cfonb\Exceptions\ParseException;
 
+use function sprintf;
 use function strlen;
 
 /** @internal */

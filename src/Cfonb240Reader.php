@@ -25,6 +25,8 @@ use Silarhi\Cfonb\Parser\Cfonb240\Line39Parser;
 use Silarhi\Cfonb\Parser\EmptyParser;
 use Silarhi\Cfonb\Parser\FileParser;
 
+use function sprintf;
+
 class Cfonb240Reader
 {
     final public const LINE_LENGTH = 240;
