@@ -4,7 +4,7 @@
       "name": "PHPStan",
       "job": {
         "command": "./vendor/bin/phpstan analyse",
-        "php": "8.2"
+        "php": "@lowest"
       }
     }
   ]
