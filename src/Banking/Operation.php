@@ -34,7 +34,7 @@ class Operation extends Element
         private readonly ?string $internalCode,
         private readonly ?string $currencyCode,
         private readonly ?string $rejectCode,
-        private readonly ?string $exemptCode
+        private readonly ?string $exemptCode,
     ) {
         $this->details = [];
     }
