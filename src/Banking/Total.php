@@ -32,7 +32,7 @@ class Total extends Element
         private readonly string $recipientAccountNumber2,
         private readonly ?string $recipientName2,
         private ?string $processingCenterCode,
-        private readonly float $totalAmount
+        private readonly float $totalAmount,
     ) {
         $this->processingCenterCode = $processingCenterCode;
     }
