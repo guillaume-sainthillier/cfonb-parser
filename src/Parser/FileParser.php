@@ -40,6 +40,8 @@ final class FileParser
      */
     public function parse(string $content, int $lineLength, bool $strict): iterable
     {
+        $content = ltrim(rtrim(str_replace("\r\n", "\n", $content), "\n"), "\n");
+
         if (empty($content)) {
             return [];
         }

@@ -14,109 +14,246 @@ declare(strict_types=1);
 
 namespace Silarhi\Cfonb\Tests\Parser;
 
-use function assert;
-use function is_array;
-
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Silarhi\Cfonb\Banking\Element;
 use Silarhi\Cfonb\Banking\Noop;
 use Silarhi\Cfonb\Contracts\ParserInterface;
 use Silarhi\Cfonb\Parser\FileParser;
 
 class FileParserTest extends TestCase
 {
-    public function testEmpty(): void
+    /** @return iterable<string, array<string>> */
+    public static function provideEmptyCase(): iterable
+    {
+        yield 'empty string' => [''];
+        yield 'lf' => ["\n"];
+        yield 'crlf' => ["\r\n"];
+    }
+
+    #[DataProvider('provideEmptyCase')]
+    public function testEmpty(string $content): void
     {
         $parser = $this->createMock(ParserInterface::class);
         $parser->expects(self::never())->method('supports');
 
         $sUT = new FileParser($parser);
 
-        self::assertSame([], iterator_to_array($sUT->parse('', 10, true)));
+        self::assertSame([], iterator_to_array($sUT->parse($content, 10, true)));
     }
 
-    public function testSplitOk(): void
+    /** @return iterable<string, array<string, mixed>> */
+    public static function provideComplexCase(): iterable
     {
         $object1 = new Noop();
         $object2 = new Noop();
         $object3 = new Noop();
 
-        $parser = $this->createMock(ParserInterface::class);
-
-        $supportsSeries = [
-            [['aaaaaaaaaa'], true],
-            [['bbbbbbbbbb'], true],
-            [[''], true],
+        yield 'with split' => [
+            'invokedCountSupport' => 3,
+            'supportArgs' => [
+                1 => ['aaaaaaaaaa'],
+                2 => ['bbbbbbbbbb'],
+                3 => [''],
+            ],
+            'supportReturnValue' => [
+                1 => true,
+                2 => true,
+                3 => true,
+            ],
+            'invokedCountParse' => 3,
+            'parseArgs' => [
+                1 => 'aaaaaaaaaa',
+                2 => 'bbbbbbbbbb',
+                3 => '',
+            ],
+            'parseReturnValue' => [
+                1 => $object1,
+                2 => $object2,
+                3 => $object3,
+            ],
+            'expected' => [$object1, $object2, $object3],
+            'content' => 'aaaaaaaaaabbbbbbbbbb',
+            'lineLength' => 10,
+            'strict' => true,
         ];
-        $parser->expects(self::exactly(3))
-            ->method('supports')
-            ->willReturnCallback(function (mixed ...$args) use (&$supportsSeries): bool {
-                $serie = array_shift($supportsSeries);
-                assert(is_array($serie));
-                [$expectedArgs, $return] = $serie;
-                $this->assertSame($expectedArgs, $args);
 
-                return $return;
-            })
-        ;
-
-        $parseSeries = [
-            [['aaaaaaaaaa', true], $object1],
-            [['bbbbbbbbbb', true], $object2],
-            [['', true], $object3],
-        ];
-        $parser->expects(self::exactly(3))
-            ->method('parse')
-            ->willReturnCallback(function (mixed ...$args) use (&$parseSeries): Noop {
-                $serie = array_shift($parseSeries);
-                assert(is_array($serie));
-                [$expectedArgs, $return] = $serie;
-                $this->assertSame($expectedArgs, $args);
-
-                return $return;
-            })
-        ;
-
-        $sUT = new FileParser($parser);
-
-        self::assertSame([$object1, $object2, $object3], iterator_to_array($sUT->parse('aaaaaaaaaabbbbbbbbbb', 10, true)));
-    }
-
-    public function testDontSplitWithSameLength(): void
-    {
         $object1 = new Noop();
 
-        $supportsSeries = [
-            [['aaaaaaaaaa'], true],
+        yield 'simple' => [
+            'invokedCountSupport' => 1,
+            'supportArgs' => [
+                1 => ['aaaaaaaaaa'],
+            ],
+            'supportReturnValue' => [
+                1 => true,
+            ],
+            'invokedCountParse' => 1,
+            'parseArgs' => [
+                1 => 'aaaaaaaaaa',
+            ],
+            'parseReturnValue' => [
+                1 => $object1,
+            ],
+            'expected' => [$object1],
+            'content' => 'aaaaaaaaaa',
+            'lineLength' => 10,
+            'strict' => true,
         ];
-        $parser = $this->createMock(ParserInterface::class);
-        $parser->expects(self::exactly(1))
-            ->method('supports')
-            ->willReturnCallback(function (mixed ...$args) use (&$supportsSeries): bool {
-                $serie = array_shift($supportsSeries);
-                assert(is_array($serie));
-                [$expectedArgs, $return] = $serie;
-                $this->assertSame($expectedArgs, $args);
 
-                return $return;
+        $object1 = new Noop();
+
+        yield 'with crlf at beginning and end' => [
+            'invokedCountSupport' => 1,
+            'supportArgs' => [
+                1 => ['aaaaaaaaaa'],
+            ],
+            'supportReturnValue' => [
+                1 => true,
+            ],
+            'invokedCountParse' => 1,
+            'parseArgs' => [
+                1 => 'aaaaaaaaaa',
+            ],
+            'parseReturnValue' => [
+                1 => $object1,
+            ],
+            'expected' => [$object1],
+            'content' => "\r\naaaaaaaaaa\r\n",
+            'lineLength' => 10,
+            'strict' => true,
+        ];
+
+        yield 'with crlf at end' => [
+            'invokedCountSupport' => 1,
+            'supportArgs' => [
+                1 => ['aaaaaaaaaa'],
+            ],
+            'supportReturnValue' => [
+                1 => true,
+            ],
+            'invokedCountParse' => 1,
+            'parseArgs' => [
+                1 => 'aaaaaaaaaa',
+            ],
+            'parseReturnValue' => [
+                1 => $object1,
+            ],
+            'expected' => [$object1],
+            'content' => "aaaaaaaaaa\r\n",
+            'lineLength' => 10,
+            'strict' => true,
+        ];
+
+        yield 'with lf at beginning and end' => [
+            'invokedCountSupport' => 1,
+            'supportArgs' => [
+                1 => ['aaaaaaaaaa'],
+            ],
+            'supportReturnValue' => [
+                1 => true,
+            ],
+            'invokedCountParse' => 1,
+            'parseArgs' => [
+                1 => 'aaaaaaaaaa',
+            ],
+            'parseReturnValue' => [
+                1 => $object1,
+            ],
+            'expected' => [$object1],
+            'content' => "\naaaaaaaaaa\n",
+            'lineLength' => 10,
+            'strict' => true,
+        ];
+
+        yield 'with lf at end' => [
+            'invokedCountSupport' => 1,
+            'supportArgs' => [
+                1 => ['aaaaaaaaaa'],
+            ],
+            'supportReturnValue' => [
+                1 => true,
+            ],
+            'invokedCountParse' => 1,
+            'parseArgs' => [
+                1 => 'aaaaaaaaaa',
+            ],
+            'parseReturnValue' => [
+                1 => $object1,
+            ],
+            'expected' => [$object1],
+            'content' => "aaaaaaaaaa\n",
+            'lineLength' => 10,
+            'strict' => true,
+        ];
+
+        yield 'with lf at end and empty string' => [
+            'invokedCountSupport' => 1,
+            'supportArgs' => [
+                1 => ['      '],
+            ],
+            'supportReturnValue' => [
+                1 => true,
+            ],
+            'invokedCountParse' => 1,
+            'parseArgs' => [
+                1 => '      ',
+            ],
+            'parseReturnValue' => [
+                1 => $object1,
+            ],
+            'expected' => [$object1],
+            'content' => "      \n",
+            'lineLength' => 10,
+            'strict' => true,
+        ];
+    }
+
+    /**
+     * @param array<int, array<string>> $supportArgs
+     * @param array<int, bool>          $supportReturnValue
+     * @param array<int, string>        $parseArgs
+     * @param array<int, Element>       $parseReturnValue
+     * @param array<Element>            $expected
+     * @param positive-int              $lineLength
+     */
+    #[DataProvider('provideComplexCase')]
+    public function testSplitOk(
+        int $invokedCountSupport,
+        array $supportArgs,
+        array $supportReturnValue,
+        int $invokedCountParse,
+        array $parseArgs,
+        array $parseReturnValue,
+        array $expected,
+        string $content,
+        int $lineLength,
+        bool $strict,
+    ): void {
+        $parser = $this->createMock(ParserInterface::class);
+
+        $invokedCountSupportInternal = self::exactly($invokedCountSupport);
+        $parser->expects($invokedCountSupportInternal)
+            ->method('supports')
+            ->willReturnCallback(function (mixed ...$args) use ($invokedCountSupportInternal, $supportArgs, $supportReturnValue): mixed {
+                self::assertSame($supportArgs[$invokedCountSupportInternal->numberOfInvocations()], $args);
+
+                return $supportReturnValue[$invokedCountSupportInternal->numberOfInvocations()];
             })
         ;
 
-        $parseSeries = [
-            [['aaaaaaaaaa', true], $object1],
-        ];
-        $parser->expects(self::exactly(1))
+        $invokedCountParseInternal = self::exactly($invokedCountParse);
+        $parser->expects($invokedCountParseInternal)
             ->method('parse')
-            ->willReturnCallback(function (mixed ...$args) use (&$parseSeries): Noop {
-                $serie = array_shift($parseSeries);
-                assert(is_array($serie));
-                [$expectedArgs, $return] = $serie;
-                $this->assertSame($expectedArgs, $args);
+            ->willReturnCallback(function (mixed ...$args) use ($invokedCountParseInternal, $parseArgs, $parseReturnValue, $strict): mixed {
+                self::assertSame([$parseArgs[$invokedCountParseInternal->numberOfInvocations()], $strict], $args);
 
-                return $return;
-            });
+                return $parseReturnValue[$invokedCountParseInternal->numberOfInvocations()];
+            })
+        ;
 
         $sUT = new FileParser($parser);
 
-        self::assertSame([$object1], iterator_to_array($sUT->parse('aaaaaaaaaa', 10, true)));
+        self::assertSame($expected, iterator_to_array($sUT->parse($content, $lineLength, $strict)));
     }
 }
