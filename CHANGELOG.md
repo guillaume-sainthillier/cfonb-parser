@@ -1,3 +1,7 @@
+# 6.0
+
+Drop support for php 8.1
+
 # 5.0
 
 Add a strict mode parameter
