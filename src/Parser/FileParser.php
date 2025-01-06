@@ -23,10 +23,10 @@ use function sprintf;
 use function strlen;
 
 /** @internal */
-final class FileParser
+final readonly class FileParser
 {
     /** @var ParserInterface[] */
-    private readonly array $parsers;
+    private array $parsers;
 
     public function __construct(ParserInterface ...$parsers)
     {
